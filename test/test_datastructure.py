@@ -1,10 +1,10 @@
 
 from assignment_collect.datastructure import Repository, Student
-from subprocess import Popen, PIPE
 import subprocess
+import pytest
 
 
-def test_repostory_clone(tmpdir):
+def test_repository_clone(tmpdir):
     dir_from = tmpdir.mkdir('from')
     dir_to = tmpdir.mkdir('to')
     assert subprocess.call(['git', 'init'], cwd=str(dir_from)) == 0
@@ -21,7 +21,8 @@ def test_repostory_clone(tmpdir):
     assert dir_to.join('hello.txt').read() == 'Hello World!'
 
 
-def test_repostory_clone_remote(tmpdir):
+@pytest.mark.skip("need internet connection")
+def test_repository_clone_remote(tmpdir):
     url = "https://github.com/berleon/test.git"
     student = Student("Julia", "4534343")
     repo = Repository(url, [student])
@@ -29,3 +30,11 @@ def test_repostory_clone_remote(tmpdir):
 
     assert tmpdir.join('hello.txt').check()
     assert tmpdir.join('hello.txt').read() == 'Hello World!\n'
+
+
+def test_repository_json():
+    url = "https://github.com/berleon/test.git"
+    student = Student("Julia", "4534343")
+    repo = Repository(url, [student])
+    json_repo = Repository.from_json(repo.to_json())
+    assert repo == json_repo
