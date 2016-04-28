@@ -1,0 +1,7 @@
+#! /usr/bin/env bash
+
+jupyter nbconvert \
+    --to notebook \
+    --ExecutePreprocessor.kernel_name=python3 \
+    --allow-errors \
+    --execute --inplace $1

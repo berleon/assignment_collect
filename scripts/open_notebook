@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+basename=$(basename `pwd`)
+url="http://localhost:9999/tree/repos/$basename/assignments/$1.ipynb"
+chromium $url
