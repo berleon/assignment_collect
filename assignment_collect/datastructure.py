@@ -1,5 +1,16 @@
 from subprocess import Popen, PIPE
 import json
+import os
+
+
+def run(command):
+    p = Popen(command, stdout=PIPE,
+              stderr=PIPE)
+    stdout, stderr = p.communicate()
+    if p.returncode != 0:
+        raise ValueError(
+            "Command failed: {}\nstdout:\n{}\nstderr:\n{}".format(
+                ' '.join(command), stdout, stderr))
 
 
 class Datastructure:
@@ -34,6 +45,9 @@ class Repository(Datastructure):
     def __init__(self, url, students):
         self.url = url
         self.students = self._maybe_get_students_from_config(students)
+
+    def name(self):
+        return os.path.basename(self.url)
 
     @staticmethod
     def _maybe_get_students_from_config(students):
