@@ -6,7 +6,8 @@ import os
 
 
 def repo_dirname(repo):
-    prefix = repo.url.split('/')[-2:]
+    repo_name = repo.url.split(':')[-1]
+    prefix = repo_name.split('/')[-2:]
     if prefix[-1].endswith('.git'):
         prefix[-1] = prefix[-1][:-len('.git')]
     lastnames = []
@@ -17,19 +18,37 @@ def repo_dirname(repo):
 
 
 def clone_all(repositories, to):
-    return [repo.clone(os.path.join(to, repo_dirname(repo)))
-            for repo in repositories]
+    cloned = []
+    for repo in repositories:
+        repo_name = repo_dirname(repo)
+        path = os.path.join(to, repo_name)
+        if not os.path.exists(path):
+            print("Cloning: {}".format(repo_name))
+            cloned.append(repo.clone(path))
+
+    for repo in cloned:
+        repo.url = os.path.basename(repo.url)
+    return cloned
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("json", type=str,
                         help='file with json repository structure')
-    parser.add_argument('-t,--to', type=str,
+    parser.add_argument('-t', '--to', type=str,
                         help='clone repositories to this directory')
+    parser.add_argument('--list', type=bool, default=False,
+                        help='file is a list of repositories')
 
     args = parser.parse_args()
     with open(args.json) as f:
-        repositories = [Repository(**c) for c in json.load(f)]
+        if args.list:
+            repositories = [Repository(url=url.rstrip('\n'), students=[])
+                            for url in f.readlines()]
+        else:
+            repositories = [Repository(**c) for c in json.load(f)]
 
-    clone_all(repositories, args.to)
+    cloned_repos = clone_all(repositories, args.to)
+    config = [r.get_config() for r in cloned_repos]
+    with open(os.path.join(args.to, 'repos.json'), 'w+') as f:
+        json.dump(config, f, ensure_ascii=False)

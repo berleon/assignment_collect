@@ -63,14 +63,7 @@ class Repository(Datastructure):
         return students_return
 
     def clone(self, dirname):
-        command = ['git', 'clone', self.url, dirname]
-        p = Popen(command, stdout=PIPE,
-                  stderr=PIPE)
-        stdout, stderr = p.communicate()
-        assert p.returncode == 0, \
-            "Command failed: {}\nstdout:\n{}\nstderr:\n{}"\
-                .format(' '.join(command), stdout, stderr)
-
+        run(['git', 'clone', self.url, dirname])
         return Repository(dirname, self.students)
 
     def get_config(self):
