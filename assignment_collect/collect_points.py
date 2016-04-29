@@ -1,13 +1,13 @@
 
 import argparse
 import json
-from assignment_collect.datastructure import Repository, run
+from assignment_collect.datastructure import Repository
 import os
 import csv
 import re
 import traceback
 
-_find_ex_regex = re.compile('ex(\d+):(\d+)', re.MULTILINE)
+_find_ex_regex = re.compile('ex(\d+):(\d+(\.\d)?)', re.MULTILINE)
 
 
 def collect_points_from_repo(repo, notebook_name, max_points):
@@ -25,8 +25,9 @@ def collect_points_from_repo(repo, notebook_name, max_points):
         with open(notebook_fname, 'r') as f:
             nb = f.read()
             for match in _find_ex_regex.findall(nb):
-                ex, points_for_ex = [int(m) for m in match]
-                ex -= 1
+                ex, points_for_ex, _ = match
+                points_for_ex = float(points_for_ex)
+                ex = int(ex) - 1
                 assert ex < len(points)
                 assert ex >= 0
                 assert points_for_ex < max_points[ex]
@@ -34,11 +35,33 @@ def collect_points_from_repo(repo, notebook_name, max_points):
                 assert ex not in ex_found, "Multiple ex{}".format(ex+1)
                 points[ex] = points_for_ex
                 ex_found.add(ex)
+
+        grades_fname = os.path.join(repo.url, 'grades.txt')
+
+        grade_line = "{}:\t{}\tsum({})\n".format(
+            notebook_name, ", ".join(map(str, points)), sum(points))
+
+        if os.path.exists(grades_fname):
+            with open(grades_fname, 'r') as f:
+                grade_enteries = list(f.readlines())
+            for i, line in enumerate(grade_enteries):
+                if line.startswith(notebook_name):
+                    grade_enteries[i] = grade_line
+        else:
+            grade_enteries = []
+
+        if grade_line not in grade_enteries:
+            grade_enteries.append(grade_line)
+
+        with open(grades_fname, 'w+') as f:
+            f.write("".join(grade_enteries))
+
     except:
         print("Exception in: {}".format(repo.name()))
         traceback.print_exc()
 
-    return [[s.name, s.matnr, sum(points)] for s in repo.students]
+    return [[s.zedat_name, s.zedat_name, s.lastname,
+             s.firstname, sum(points)] for s in repo.students]
 
 
 def collect_points(repos, notebook, max_points):
