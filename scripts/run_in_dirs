@@ -2,6 +2,6 @@
 
 for dir in $(echo `pwd`/*/); do
     cd "$dir"
-    echo "Running $@ in $dir"
-    $@
+    echo "Running $* in $dir"
+    eval "$*"
 done
