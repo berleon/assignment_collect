@@ -30,14 +30,26 @@ class Datastructure:
 
 
 class Student(Datastructure):
-    def __init__(self, name, matnr):
+    def __init__(self, name, matnr, email='', zedat_name=''):
         self.name = name
+        self.email = email
         self.matnr = matnr
+        self.zedat_name = zedat_name
+
+    @property
+    def firstname(self):
+        return " ".join(self.name.split(" ")[:-1])
+
+    @property
+    def lastname(self):
+        return self.name.split(" ")[-1]
 
     def get_config(self):
         return {
             'name': self.name,
-            'matnr': self.matnr
+            'matnr': self.matnr,
+            'email': self.email,
+            'zedat_name': self.zedat_name
         }
 
 
