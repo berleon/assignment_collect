@@ -12,11 +12,13 @@ setup(
         'scripts/run_in_dirs',
         'scripts/open_notebook',
         'scripts/run_notebook',
+        'scripts/nb_strip_output.py',
     ],
     entry_points={
         'console_scripts': [
             'clone_all = assignment_collect.clone_all:main',
-            'collect_points = assignment_collect.collect_points:main'
+            'collect_points = assignment_collect.collect_points:main',
+            'complete_student_data = assignment_collect.complete_student_data:main'
         ]
     },
 )
