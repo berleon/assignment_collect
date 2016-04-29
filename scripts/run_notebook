@@ -2,6 +2,5 @@
 
 jupyter nbconvert \
     --to notebook \
-    --ExecutePreprocessor.kernel_name=python3 \
     --allow-errors \
-    --execute --inplace $1
+    --execute --inplace assignments/$1.ipynb
