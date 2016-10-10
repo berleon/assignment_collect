@@ -7,7 +7,7 @@ from assignment_collect.utils import run, get_subdirs
 from assignment_collect.git import git_root
 
 
-class Datastructure:
+class Datastructure(object):
     def get_config(self):
         raise NotImplemented()
 
@@ -86,9 +86,10 @@ class Repository(Datastructure):
         for student in students:
             if type(student) == dict:
                 students_return.append(Student(**student))
-            elif type(student) == Student:
+            elif isinstance(student, Student):
                 students_return.append(student)
             else:
+                print(isinstance(student, Student))
                 raise ValueError("Wrong type for student: {}, {}".format(
                     type(student), student))
         return students_return

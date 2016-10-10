@@ -9,7 +9,7 @@ import csv
 
 import click
 from assignment_collect.datastructure import Repository, RepositoryCollection, Student
-from assignment_collect.utils import run, get_subdirs
+from assignment_collect.utils import run, get_subdirs, mkdir_p
 from assignment_collect.git import git_root, git_remote_v, git_clone
 
 
@@ -182,7 +182,7 @@ def clone_all(output, repolist):
     with open(repolist) as f:
         urls = [url.rstrip('\n') for url in f.readlines()]
 
-    os.makedirs(output, exist_ok=True)
+    mkdir_p(output)
 
     subdirs = get_subdirs(output)
     allready_cloned = {}
