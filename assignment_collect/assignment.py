@@ -10,7 +10,7 @@ import csv
 import click
 from assignment_collect.datastructure import Repository, RepositoryCollection, Student
 from assignment_collect.utils import run, get_subdirs, mkdir_p
-from assignment_collect.git import git_root, git_remote_v, git_clone
+from assignment_collect.git import git_root, git_remote_v, git_clone, git_commit
 
 
 def repo_json_fname():
@@ -31,7 +31,6 @@ def save_repo(repo):
         json.dump(repo.get_config(), f)
     run(["git", "add", repo_json_fname()], cwd=git_root())
     basename = os.path.basename(repo_json_fname())
-    print("Please commit the {} file.".format(basename))
 
 
 @click.group()
@@ -96,6 +95,35 @@ class StudentOption(click.Option):
         return students
 
 
+class RemoteOption(click.Option):
+    def prompt_for_value(self, ctx):
+        remotes = git_remote_v()
+
+        if len(remotes) == 1:
+            print("Found only one remote: {} at {}".format(*remotes[0]), file=sys.stderr)
+            print("You should have two remotes. One remote to pull the assignments from.\n"
+                  "And one remote where you push our solved assignments.", file=sys.stderr)
+            print("Make sure you add your remote and then rerun this program.", file=sys.stderr)
+            print("Abort!", file=sys.stderr)
+            sys.exit(1)
+
+        remotes_prompt = ["[{}] {} {}".format(i, name,  url)
+                          for i, (name, url) in enumerate(remotes)]
+        remotes_prompt.append(
+            "Select your remote repository. The instructor will use this repository"
+            " to collect your assignments. [0-{}]".format(len(remotes) - 1))
+
+        while True:
+            try:
+                remote_idx = click.prompt("\n".join(remotes_prompt), value_proc=int)
+                break
+            except ValueError:
+                print("Please enter a number from 0-{}".format(len(remotes) - 1))
+
+        _, url = remotes[remote_idx]
+        return url
+
+
 @main.command()
 @click.option('--student', prompt=True, init_repo=False, max_students=1, cls=StudentOption)
 def add_student(student):
@@ -106,38 +134,16 @@ def add_student(student):
 
 
 @main.command()
-@click.option('--student', prompt=True, max_students=2, cls=StudentOption)
-def init(student):
-    for s in student:
+@click.option('--remote', prompt=True, cls=RemoteOption)
+@click.option('--students', prompt=True, max_students=2, cls=StudentOption)
+def init(remote, students):
+    for s in students:
         print(s)
-
-    remotes = git_remote_v()
-
-    if len(remotes) == 1:
-        print("Found only one remote: {} at {}".format(*remotes[0]), file=sys.stderr)
-        print("You should have two remotes. One remote to pull the assignments from.\n"
-              "And one remote where you push our solved assignments.", file=sys.stderr)
-        print("Make sure you add your remote and then rerun this program.", file=sys.stderr)
-        print("Abort!", file=sys.stderr)
-        sys.exit(1)
-
-    remotes_prompt = ["[{}] {} {}".format(i, name,  url)
-                      for i, (name, url) in enumerate(remotes)]
-    remotes_prompt.append(
-        "Select your remote repository. The instructure will use this repository"
-        " to collect your assignments. [0-{}]".format(len(remotes) - 1))
-
-    while True:
-        try:
-            remote_idx = click.prompt("\n".join(remotes_prompt), value_proc=int)
-            break
-        except ValueError:
-            print("Please enter a number from 0-{}".format(len(remotes) - 1))
-
-    _, url = remotes[remote_idx]
-    repo = Repository(url, student, git_root())
+    repo_root = git_root()
+    repo = Repository(remote, students, repo_root)
     save_repo(repo)
     print("Initialized repository!")
+    print("Please commit and push your changes!")
 
 
 @main.command()

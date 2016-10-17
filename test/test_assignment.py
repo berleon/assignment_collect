@@ -60,11 +60,11 @@ def init_assignment(repo, matrnr="456524"):
     os.chdir(str(repo))
     upstream_url = 'git@github.com:upstream/upstream.git'
     run(['git', 'remote', 'add', 'upstream', upstream_url])
-    stdin = "Max\n"
+    stdin = "1\n"   # remote index
+    stdin += "Max\n"
     stdin += "Nix\n"
     stdin += "{}\n".format(matrnr)
     stdin += "n\n"   # only one student
-    stdin += "1\n"   # remote index
     run(['assignment', 'init'], stdin)
 
 
