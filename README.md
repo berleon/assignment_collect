@@ -9,7 +9,7 @@ Some of its features are tailored towards
 Just run this command:
 
 ```
-$ pip install git+
+$ pip install git+https://github.com/berleon/assignment_collect
 ```
 
 # Commands for students
